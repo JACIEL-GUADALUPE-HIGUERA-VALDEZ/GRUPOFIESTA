@@ -9,25 +9,20 @@ from flask import Flask
 import asyncio
 import logging
 
-# Token
 TOKEN = "7829297226:AAFkcichy6VgzbVZI_lx4KlTse5pG0Q5D1A"
 
-# Logs
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Flask app
 app = Flask(__name__)
 
 @app.route("/")
 def home():
     return "Bot corriendo correctamente ✅"
 
-# Función principal del bot
 async def run_bot():
     app_telegram = ApplicationBuilder().token(TOKEN).build()
 
-    # Cuando alguien solicita unirse
     async def handle_join_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user = update.chat_join_request.from_user
 
@@ -43,7 +38,6 @@ async def run_bot():
             reply_markup=keyboard
         )
 
-    # Cuando hacen clic en un botón
     async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         query = update.callback_query
         data = query.data
@@ -62,7 +56,6 @@ async def run_bot():
     await app_telegram.updater.start_polling()
     await app_telegram.updater.wait_for_stop()
 
-# Iniciar bot y Flask
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     loop.create_task(run_bot())
