@@ -1,28 +1,8 @@
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
-from telegram.ext import (
-    ApplicationBuilder,
-    ContextTypes,
-    ChatJoinRequestHandler,
-    CallbackQueryHandler,
-)
-from flask import Flask
-import asyncio
-import logging
-
-TOKEN = "7829297226:AAFkcichy6VgzbVZI_lx4KlTse5pG0Q5D1A"
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-app = Flask(__name__)
-
-@app.route("/")
-def home():
-    return "Bot corriendo correctamente ✅"
-
-async def run_bot():
+# ...dentro de run_bot
+def run_bot():
     app_telegram = ApplicationBuilder().token(TOKEN).build()
 
+    # Maneja solicitud de acceso al grupo
     async def handle_join_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user = update.chat_join_request.from_user
 
@@ -38,6 +18,7 @@ async def run_bot():
             reply_markup=keyboard
         )
 
+    # Maneja clic en botones
     async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         query = update.callback_query
         data = query.data
@@ -48,15 +29,13 @@ async def run_bot():
                 show_alert=True
             )
 
+    # NUEVO: comando /start
+    async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        await update.message.reply_text("Bot en línea y funcionando ✅")
+
+    # Agrega handlers
+    app_telegram.add_handler(CommandHandler("start", start))
     app_telegram.add_handler(ChatJoinRequestHandler(handle_join_request))
     app_telegram.add_handler(CallbackQueryHandler(handle_callback))
 
-    await app_telegram.initialize()
-    await app_telegram.start()
-    await app_telegram.updater.start_polling()
-    await app_telegram.updater.wait_for_stop()
-
-if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.create_task(run_bot())
-    app.run(host="0.0.0.0", port=10000)
+    app_telegram.run_polling()
