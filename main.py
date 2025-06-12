@@ -4,6 +4,7 @@ from telegram.ext import (
     ContextTypes,
     ChatJoinRequestHandler,
     CallbackQueryHandler,
+    CommandHandler,
 )
 from flask import Flask
 from threading import Thread
@@ -25,6 +26,10 @@ def home():
 # Función que corre el bot en otro hilo
 def run_bot():
     app_telegram = ApplicationBuilder().token(TOKEN).build()
+
+    # Responde al comando /start
+    async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+        await update.message.reply_text("👋 ¡Hola! Usa este bot uniéndote al grupo privado.")
 
     # Maneja solicitud de acceso al grupo
     async def handle_join_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -53,6 +58,8 @@ def run_bot():
                 show_alert=True
             )
 
+    # Handlers
+    app_telegram.add_handler(CommandHandler("start", start))
     app_telegram.add_handler(ChatJoinRequestHandler(handle_join_request))
     app_telegram.add_handler(CallbackQueryHandler(handle_callback))
     app_telegram.run_polling()
